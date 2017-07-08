@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/jquery.js"></script>
+    </head>
+    <body>
+        <div id="test"></div>
+        <input type="button" value="send" id="testButton" />
+        <script>
+            $("#testButton").click(function () {
+                var postData = {
+                    userName: "Chien",
+                    password: "password"
+                };
+
+                $.ajax({
+                    type: "post",
+                    url: "/api/testPost",
+                    data: postData
+                }).then(function (e) {
+                    $("#test").text(JSON.stringify(e));
+                })
+
+/*
+                $.ajax({
+                    type: "post",
+                    url: "/api/testPost",
+                    contentType: "application/json",
+                    data: JSON.stringify(postData)
+                }).then(function (e) {
+                    $("#test").text(JSON.stringify(e));
+                })
+*/
+
+                
+            })
+        </script>
+    </body>
+</html>

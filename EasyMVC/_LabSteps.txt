@@ -1,0 +1,296 @@
+1.  Express 路由
+
+
+1.1 在 Workspace 建立資料夾: EasyMVC
+
+1.2 在 EasyMVC 建立新檔案: app.js，內容如下:
+
+var express = require("express");
+var app = express();
+app.listen(process.env.PORT);
+console.log("Server is running... Press 'Stop' button to exit.");
+
+1.3 點按右上角的 Run 按鈕
+
+1.4 Browser 網址:
+    https://njs-wchien.c9users.io/
+
+1.5 結束 app.js 程式
+
+1.6 修改 app.js，如下:  然後，以 https://njs-wchien.c9users.io/ 再測一次
+var express = require("express");
+var app = express();
+app.listen(process.env.PORT);
+console.log("Server is running... Press 'Stop' button to exit.");
+
+app.get("/", function (request, response) {
+    response.send("Homepage");
+});
+
+
+2   建立 Controller
+
+2.1 在 EasyMVC 建立子資料夾: controller
+
+2.2 在 controller 資料夾建立檔案: member.js，內容如下:
+
+module.exports = function (request, response) {
+    this.request = request;
+    this.response = response;
+    
+	this.index = function () {
+	    this.response.send("member controller");
+	}
+	
+	this.login = function () {
+	    this.response.send("member's login method is running");
+	}
+	
+}
+
+
+2.3 回到 app.js，新修訂內容如下:
+
+var express = require("express");
+var app = express();
+app.listen(process.env.PORT);
+console.log("Server is running... Press 'Stop' button to exit.");
+
+app.get("/", function (request, response) {
+    response.send("Homepage");
+});
+
+app.get("/:controllerName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    controller.index();
+});
+
+app.get("/:controllerName/:actionName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    
+    var actionName = request.params.actionName;
+    controller[actionName]();
+});
+
+
+2.4 以下列網址測試程式:
+    https://njs-wchien.c9users.io/member
+    https://njs-wchien.c9users.io/member/login
+
+
+
+
+3   View
+
+3.1 在 EasyMVC 建立子資料夾: view
+
+3.1 在 view 建立子資料夾: member
+
+3.3 在 member 資料夾建立檔案: index.html，內容如下:
+
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+    <body>
+        <h1>member controller index page</h1>
+        <img src="cc.png" />
+    </body>
+</html>
+
+
+3.4 修改 member.js
+
+module.exports = function (request, response) {
+    this.request = request;
+    this.response = response;
+    
+	this.index = function () {
+	    // this.response.send("member controller");
+	    this.response.render("member/index.html", {});
+	}
+	
+	this.login = function () {
+	    this.response.send("member's login method is running");
+	}
+	
+}
+
+
+3.5 修改 app.js:
+var express = require("express");
+var app = express();
+
+app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
+app.set('views', __dirname + '/view');
+
+app.listen(process.env.PORT);
+console.log("Server is running... Press 'Stop' button to exit.");
+
+app.get("/", function (request, response) {
+    response.send("Homepage");
+});
+
+app.get("/:controllerName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    controller.index();
+});
+
+app.get("/:controllerName/:actionName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    
+    var actionName = request.params.actionName;
+    controller[actionName]();
+});
+
+
+3.6 以下列網址測試程式:
+    https://njs-wchien.c9users.io/member
+
+    <Note>文字會正常顯示，但圖片無法顯示
+    
+
+
+4   靜態內容
+
+4.1 修改 app.js，加入 app.use( express.static( "public" ) ); 這行，如下: 
+    // ...
+    var app = express();
+    app.use( express.static( "public" ) );
+    // ...
+
+4.2 在 EasyMVC 建立子資料夾: public
+
+4.3 在 public 建立子資料夾: image
+
+4.4 在 image 置入 cc.png 圖檔
+
+4.5 在 public 建立子資料夾: js
+
+4.6 在 js 置入 jquery.js
+
+4.7 修改 member/index.html 檔案，新內容如下:
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="js/jquery.js"></script>
+    </head>
+    <body>
+        <h1>member controller index page</h1>
+        <img src="image/cc.png" />
+        <script>
+            $("h1").text(Date());
+        </script>
+    </body>
+</html>
+
+4.8 以下列網址測試程式:
+    https://njs-wchien.c9users.io/member
+
+
+5   一些實驗
+
+
+5.1 在 app.get("/" .. 之後，加入 下列程式:
+
+app.get("/api/testQuery", function (request, response) {
+    response.send(request.query.id);
+})
+
+5.2 完成後，以下列網址測試
+https://njs-wchien.c9users.io/api/testQuery?id=6
+
+
+5.3 修改 app.js:
+    <Note> 加入 body-parser 模組
+    <Note> 加入 app.get("/api/testQuery" ...
+    <Note> 加入 app.post("/api/testPost",
+
+var express = require("express");
+var app = express();
+
+var bodyParser = require('body-parser');
+app.use( bodyParser.json() );
+app.use( bodyParser.urlencoded({extended: false}) );
+app.use( express.static( "public" ) );
+
+app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
+app.set('views', __dirname + '/view');
+
+app.listen(process.env.PORT);
+console.log("Server is running... Press 'Stop' button to exit.");
+
+app.get("/", function (request, response) {
+    response.send("Homepage");
+});
+
+app.get("/api/testQuery", function (request, response) {
+    response.send(request.query.id);
+})
+
+app.post("/api/testPost", function (request, response) {
+    if (request.body.userName) {
+        response.send(request.body);
+    }
+    else
+        response.send("userName wrong");
+})
+
+
+app.get("/:controllerName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    controller.index();
+});
+
+app.get("/:controllerName/:actionName", function (request, response) {
+    var controllName = request.params.controllerName;
+    var moduleName = "./controller/" + controllName + ".js";
+    var controllerClass = require(moduleName);
+    var controller = new controllerClass(request, response);
+    
+    var actionName = request.params.actionName;
+    controller[actionName]();
+});
+
+
+5.4 在 public 資料夾新增檔案: form.html，內容如下:
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+    <body>
+        <form method="post" action="/api/testPost">
+            Name: <input type="text" name="userName"/><br>
+            Password: <input type="password" name="password"/><br>
+            <input type="submit" name="OkButton" value="OK"/>
+        </form>
+    </body>
+</html>
+
+
+5.5 以下列網址測試
+https://njs-wchien.c9users.io/form.html
+
+
+
+
